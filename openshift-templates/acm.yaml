@@ -1,0 +1,104 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: acm-operator
+objects:
+- apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: ${NAMESPACE}
+- apiVersion: operators.coreos.com/v1alpha1
+  kind: CatalogSource
+  metadata:
+    name: acm-custom-registry
+    namespace: ${NAMESPACE}
+  spec:
+    displayName: Advanced Cluster Management
+    publisher: Red Hat
+    sourceType: grpc
+    image: ${ACM_REGISTRY_REPO}/${ACM_IMAGE_NAME}:${ACM_SNAPSHOT}
+    updateStrategy:
+      registryPoll:
+        interval: 10m
+    secrets:
+      - ${PULL_SECRET_NAME}
+- apiVersion: operators.coreos.com/v1
+  kind: OperatorGroup
+  metadata:
+    name: default
+    namespace: ${NAMESPACE}
+  spec:
+    targetNamespaces:
+    - ${NAMESPACE}
+- apiVersion: operators.coreos.com/v1alpha1
+  kind: Subscription
+  metadata:
+    name: acm-operator-subscription
+    namespace: ${NAMESPACE}
+  spec:
+    channel: ${ACM_SUBSCRIPTION_CHANNEL}
+    installPlanApproval: ${ACM_SUBSCRIPTION_INSTALL_PLAN_APPROVAL}
+    name: advanced-cluster-management
+    source: acm-custom-registry
+    sourceNamespace: ${NAMESPACE}
+- apiVersion: operator.open-cluster-management.io/v1
+  kind: MultiClusterHub
+  metadata:
+    annotations:
+      installer.open-cluster-management.io/mce-subscription-spec: '{"channel": "${MCE_SUBSCRIPTION_CHANNEL}","installPlanApproval": "Automatic","name":
+          "multicluster-engine","source": "multiclusterengine-catalog","sourceNamespace": "${MCE_NAMESPACE}"}'
+    name: multiclusterhub
+    namespace: ${NAMESPACE}
+  spec:
+    imagePullSecret: ${PULL_SECRET_NAME}
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: multiclusterhub-operator-validating-webhook
+    namespace: ${NAMESPACE}
+  spec:
+    ingress:
+    - ports:
+      - port: 8443
+        protocol: TCP
+    podSelector:
+      matchLabels:
+        name: multiclusterhub-operator
+    policyTypes:
+    - Ingress
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: channels-validating-webhook
+    namespace: ${NAMESPACE}
+  spec:
+    ingress:
+    - from: []
+      ports:
+        - port: 9443
+    podSelector:
+      matchLabels:
+        app: multicluster-operators-channel
+
+parameters:
+- name: NAMESPACE
+  value: open-cluster-management
+- name: PULL_SECRET_NAME
+  value: stolostron-quay.io
+# ACM
+- name: ACM_REGISTRY_REPO
+  value: quay.io/stolostron
+- name: ACM_IMAGE_NAME
+  value: acm-custom-registry
+- name: ACM_SNAPSHOT
+  description: 2.5 or higher
+  value: 2.5.0-SNAPSHOT-2022-03-14-07-37-10
+- name: ACM_SUBSCRIPTION_CHANNEL
+  value: release-2.5
+- name: ACM_SUBSCRIPTION_INSTALL_PLAN_APPROVAL
+  value: Automatic
+# MCE
+- name: MCE_NAMESPACE
+  value: multicluster-engine
+- name: MCE_SUBSCRIPTION_CHANNEL
+  value: stable-2.0

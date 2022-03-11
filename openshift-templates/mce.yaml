@@ -1,0 +1,69 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: mce-operator
+objects:
+- apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: ${NAMESPACE}
+- apiVersion: operators.coreos.com/v1alpha1
+  kind: CatalogSource
+  metadata:
+    name: multiclusterengine-catalog
+    namespace: ${NAMESPACE}
+  spec:
+    displayName: MultiCluster Engine
+    publisher: Red Hat
+    sourceType: grpc
+    image: ${MCE_REGISTRY_REPO}/${MCE_IMAGE_NAME}:${MCE_SNAPSHOT}
+    updateStrategy:
+      registryPoll:
+        interval: 10m
+    secrets:
+      - ${PULL_SECRET_NAME}
+- apiVersion: operators.coreos.com/v1
+  kind: OperatorGroup
+  metadata:
+    name: default
+    namespace: ${NAMESPACE}
+  spec:
+    targetNamespaces:
+    - ${NAMESPACE}
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: multicluster-engine-operator-validating-webhook
+    namespace: ${NAMESPACE}
+  spec:
+    ingress:
+    - from: []
+      ports:
+        - port: 9443
+    podSelector:
+      matchLabels:
+        control-plane: backplane-operator
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
+    name: ocm-mutating-webhook
+    namespace: ${NAMESPACE}
+  spec:
+    ingress:
+    - from: []
+      ports:
+        - port: 8000
+    podSelector:
+      matchLabels:
+        control-plane: ocm-webhook
+parameters:
+- name: NAMESPACE
+  value: multicluster-engine
+- name: PULL_SECRET_NAME
+  value: stolostron-quay.io
+- name: MCE_REGISTRY_REPO
+  value: quay.io/stolostron
+- name: MCE_IMAGE_NAME
+  value: cmb-custom-registry
+- name: MCE_SNAPSHOT
+  value: 2.5.0-SNAPSHOT-2022-03-14-07-37-10
