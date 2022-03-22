@@ -51,6 +51,40 @@ objects:
     namespace: ${NAMESPACE}
   spec:
     imagePullSecret: ${PULL_SECRET_NAME}
+    overrides:
+      components:
+      - enabled: true
+        name: hypershift-preview
+      - enabled: true
+        name: multiclusterhub-repo
+      - enabled: false
+        name: search
+      - enabled: false
+        name: management-ingress
+      - enabled: false
+        name: console
+      - enabled: false
+        name: insights
+      - enabled: true
+        name: grc
+      - enabled: true
+        name: cluster-lifecycle
+      - enabled: false
+        name: volsync
+      - enabled: true
+        name: multicluster-engine
+      - enabled: false
+        name: cluster-backup
+      - enabled: false
+        name: cluster-proxy-addon
+      - enabled: false
+        name: assisted-service
+      - enabled: false
+        name: discovery
+      - enabled: false
+        name: hive
+      - enabled: false
+        name: console-mce
 - apiVersion: networking.k8s.io/v1
   kind: NetworkPolicy
   metadata:
@@ -92,7 +126,7 @@ parameters:
   value: acm-custom-registry
 - name: ACM_SNAPSHOT
   description: 2.5 or higher
-  value: 2.5.0-SNAPSHOT-2022-03-14-07-37-10
+  value: 2.5.0-SNAPSHOT-2022-03-22-01-58-08
 - name: ACM_SUBSCRIPTION_CHANNEL
   value: release-2.5
 - name: ACM_SUBSCRIPTION_INSTALL_PLAN_APPROVAL
