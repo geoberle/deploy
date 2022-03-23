@@ -46,6 +46,19 @@ objects:
 - apiVersion: networking.k8s.io/v1
   kind: NetworkPolicy
   metadata:
+    name: multicluster-engine-ocm-proxyserver-apiservice
+    namespace: ${NAMESPACE}
+  spec:
+    ingress:
+    - from: []
+      ports:
+        - port: 6443
+    podSelector:
+      matchLabels:
+        control-plane: ocm-proxyserver
+- apiVersion: networking.k8s.io/v1
+  kind: NetworkPolicy
+  metadata:
     name: ocm-mutating-webhook
     namespace: ${NAMESPACE}
   spec:
