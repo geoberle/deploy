@@ -126,7 +126,7 @@ parameters:
   value: acm-custom-registry
 - name: ACM_SNAPSHOT
   description: 2.5 or higher
-  value: 2.5.0-SNAPSHOT-2022-03-24-15-01-18
+  value: 2.5.0-SNAPSHOT-2022-05-12-07-33-00
 - name: ACM_SUBSCRIPTION_CHANNEL
   value: release-2.5
 - name: ACM_SUBSCRIPTION_INSTALL_PLAN_APPROVAL

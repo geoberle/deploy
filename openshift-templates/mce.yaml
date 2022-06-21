@@ -79,4 +79,4 @@ parameters:
 - name: MCE_IMAGE_NAME
   value: cmb-custom-registry
 - name: MCE_SNAPSHOT
-  value: 2.5.0-SNAPSHOT-2022-03-24-15-01-18
+  value: 2.5.0-SNAPSHOT-2022-05-12-07-33-00
